@@ -1,0 +1,75 @@
+
+Ethernet
+ether[0-13] ethernet heaader
+ether[0:4] && ether[4:2]  //destination MAC
+	ether[0:2] && ether[2] //destination OUI
+ether[6:4] && ether[10:2] //source MAC 
+	ether[6:2] && ether[8] //source OUI
+ether[12:2] //ethertype 
+
+ARP IPv4
+ether[20:2] //arp operation 1 for request 2 for reply 
+ether[22:4] && ether[26:2] //sender MAC 
+ether[28:4] //sender ip/protocol address (in HEX) 
+ether[32:4] && ether[36:2] //target MAC 
+ether[38:4] //target IP/proto address (in HEX) 
+	
+IPv4 header (add 14 to the offset if using ether[])
+ip[0]&0xF0 //version (always 4)
+ip[0]&0x0F //Internet Header Length (min of 5, bigger if ipv4 options are defined)
+ip[1]&0xFC //Differnetiated Services Code Point (first six bits of ip[1]
+ip[1]&0x03 //Explicit Congestion Notification
+ip[2:2] //total length in bytes, including header and data 
+ip[4:2] //identification (used in fragmentation)
+ip[6]&0xD0 //Flags, first 3 bits of ip[6]
+	 &0x80=0x80 //Reserved bit is set (should always be 0)
+	 &0x40=0x40 //Dont Fragment (DF) is set 
+	 &0x20=0x20 //More Fragments (MF) is set 
+ip[6:2]&0xE0 //Fragment offset (last 5 of ip[6] and all of ip[7]
+ip[8] //TTL
+ip[9] //protocol (google list of ip protocol numbers for comparison 
+ip[10:2] //header checksum
+ip[12:4] //source IP 
+ip[16:4] //destination IP 
+**if IHL is over 5: ip[20] and beyond will have the options 
+
+ICMPv4 Header (add +20 if IP IHL is 5, and +34 for ether[])
+icmp[0] //type
+icmp[1] //code 
+icmp[2:2] //checksum 
+icmp[4:4] //rest of header 
+
+UDP Header (can use +20 to offset if IPv4 IHL is 5 for ip[] or +34 for ether[])
+udp[0:2] //udp source port
+udp[2:2] //udp destination port 
+udp[4:2] //udp datagram length in bytes 
+udp[6:2] //udp datagram checksum 
+
+TCP Header (can use +20 to offset if IPv4 IHL is 5 for ip[] or +34 for ether[])
+tcp[0:2] //tcp source port 
+tcp[2:2] //tcp destination port 
+tcp[4:4] //sequence number 
+tcp[8:4] //acknowledgement number (if ACK is set)
+tcp[12]&0xF0 //data offset (usually 5 unless options are set)
+tcp[12]&0x0E //reserved, should always be 0
+tcp[12]&0x1=1 //if true, the NS bit (ecn nonce) is set 
+tcp[13] //flags 
+	tcp[13]&0x80 //CWR
+	tcp[13]&0x40 //ECE
+	tcp[13]&0x20 //URG
+	tcp[13]&0x10 //ACK 
+	tcp[13]&0x8 //PSH
+	tcp[13]&0x4 //RST
+	tcp[13]&0x2 //SYN
+	tcp[13]&0x1 //FIN 
+tcp[14:2] //window size 
+tcp[16:2] //checksum 
+tcp[18:2] //URG pointer (if URG is set]
+**tcp[20] and up used for options if data offset is > 5
+
+
+
+
+
+
+	
